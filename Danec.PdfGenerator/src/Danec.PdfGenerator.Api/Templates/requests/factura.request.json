@@ -1,0 +1,29 @@
+{
+  "template": "factura",
+  "fileName": "factura-001-001-000012345",
+  "page": { "size": "A4", "orientation": "Portrait", "marginMm": 15 },
+  "data": {
+    "numero": "001-001-000012345",
+    "fecha": "27/09/2026",
+    "ivaPorcentaje": 15,
+    "marcaAgua": "BORRADOR",
+    "empresa": {
+      "nombre": "Empresa Demo S.A.",
+      "ruc": "0999999999001",
+      "direccion": "Av. Principal 123, Quito - Ecuador"
+    },
+    "cliente": {
+      "nombre": "Juan Pérez & Asociados",
+      "ruc": "1799999999001",
+      "direccion": "Calle Secundaria N45-10, Quito"
+    },
+    "items": [
+      { "codigo": "A-100", "descripcion": "Aceite vegetal 1 L", "cantidad": 24, "precio": 2.35 },
+      { "codigo": "A-205", "descripcion": "Margarina de mesa 500 g", "cantidad": 36, "precio": 1.89 },
+      { "codigo": "J-310", "descripcion": "Jabón de tocador 3 x 125 g", "cantidad": 12, "precio": 2.75 },
+      { "codigo": "D-440", "descripcion": "Detergente en polvo 2 kg", "cantidad": 10, "precio": 6.40 },
+      { "codigo": "M-512", "descripcion": "Manteca vegetal 1 kg", "cantidad": 8, "precio": 3.15 }
+    ],
+    "observaciones": "Pago a 30 días. Precios incluyen descuento por volumen."
+  }
+}

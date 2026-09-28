@@ -1,0 +1,9 @@
+global using System.Globalization;
+global using System.Text.Json;
+global using Danec.PdfGenerator.Application.Abstractions;
+global using Danec.PdfGenerator.Application.Documents;
+global using Danec.PdfGenerator.Domain.Abstractions;
+global using Danec.PdfGenerator.Domain.Documents;
+global using Danec.PdfGenerator.Infrastructure.Settings;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;

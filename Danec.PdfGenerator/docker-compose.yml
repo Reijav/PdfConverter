@@ -1,0 +1,21 @@
+# API + Gotenberg (convierte el .docx de MiniWord a PDF). Gotenberg escucha en el puerto 3001.
+#   docker compose up --build        -> API en http://localhost:8081, Gotenberg en http://localhost:3001
+# En Azure Container Apps, Gotenberg va como segundo contenedor (sidecar) de la misma app, con el mismo
+# argumento --api-port=3001: la API lo llama en http://localhost:3001 y no se expone a internet.
+services:
+  api:
+    build: .
+    image: danec-pdfgenerator:dev
+    ports:
+      - "8081:8080"
+    environment:
+      Pdf__Gotenberg__BaseUrl: http://gotenberg:3001
+      Pdf__Chromium__MaxConcurrency: "2"
+    depends_on:
+      - gotenberg
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    command: ["gotenberg", "--api-port=3001"]
+    ports:
+      - "3001:3001"   # opcional: solo para probar desde el host (dotnet run / tests)

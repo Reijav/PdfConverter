@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Danec.PdfGenerator.Api/Danec.PdfGenerator.Api.csproj" />
+    <Project Path="src/Danec.PdfGenerator.Application/Danec.PdfGenerator.Application.csproj" />
+    <Project Path="src/Danec.PdfGenerator.Domain/Danec.PdfGenerator.Domain.csproj" />
+    <Project Path="src/Danec.PdfGenerator.Infrastructure/Danec.PdfGenerator.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Danec.PdfGenerator.Api.IntegrationTests/Danec.PdfGenerator.Api.IntegrationTests.csproj" />
+    <Project Path="tests/Danec.PdfGenerator.ArchitectureTests/Danec.PdfGenerator.ArchitectureTests.csproj" />
+    <Project Path="tests/Danec.PdfGenerator.Domain.Tests/Danec.PdfGenerator.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

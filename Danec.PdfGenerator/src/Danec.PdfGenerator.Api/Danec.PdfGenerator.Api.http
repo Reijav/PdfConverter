@@ -1,0 +1,81 @@
+@api = http://localhost:5080/api/v1/pdf
+
+### Plantillas disponibles y motores que las aceptan
+GET {{api}}/templates
+
+### Datos de ejemplo de una plantilla
+GET {{api}}/templates/factura/sample
+
+### ------------------------------------------------------------------
+### Factura con cada motor (misma plantilla factura, mismos parametros)
+### ?inline=true la abre en el navegador en lugar de descargarla
+### ------------------------------------------------------------------
+
+### 1. iTextSharp LGPL (HtmlWorker)
+POST {{api}}/itext?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
+### 2. QuestPDF 2022.12 (plantilla en C#)
+POST {{api}}/questpdf?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
+### 3. Scriban + HtmlRenderer.PdfSharp
+POST {{api}}/htmlrenderer?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
+### 4. PuppeteerSharp (Chromium)
+POST {{api}}/puppeteer?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
+### 5. Microsoft.Playwright (Chromium)
+POST {{api}}/playwright?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
+### 6. PDF base + texto superpuesto
+POST {{api}}/overlay?inline=true
+Content-Type: application/json
+
+{
+  "template": "certificado",
+  "page": { "orientation": "Landscape" },
+  "data": {
+    "nombre": "Juan Pérez Andrade",
+    "curso": "Arquitectura de Software en .NET 10",
+    "horas": 40,
+    "fecha": "27 de septiembre de 2026",
+    "instructor": "María López",
+    "codigo": "CERT-2026-000123"
+  }
+}
+
+### ------------------------------------------------------------------
+### HTML en linea (plantilla Scriban enviada en la solicitud)
+### ------------------------------------------------------------------
+POST {{api}}/playwright?inline=true
+Content-Type: application/json
+
+{
+  "html": "<div style='display:flex;gap:16px;font-family:Arial'>{{ for k in kpis }}<div style='flex:1;border-radius:8px;padding:16px;background:#1f4e79;color:#fff'><div style='font-size:12px'>{{ k.nombre }}</div><div style='font-size:28px;font-weight:bold'>{{ k.valor }}</div></div>{{ end }}</div>",
+  "data": { "kpis": [ { "nombre": "Ventas", "valor": "$ 1.2M" }, { "nombre": "Clientes", "valor": "3.480" }, { "nombre": "Pedidos", "valor": "12.905" } ] },
+  "page": { "size": "A4", "orientation": "Landscape", "marginMm": 10 },
+  "fileName": "kpis"
+}
+
+### Vista previa del HTML combinado (depurar plantillas)
+POST {{api}}/preview-html
+Content-Type: application/json
+
+{
+  "template": "factura",
+  "data": { "numero": "001", "empresa": { "nombre": "Demo" }, "items": [] }
+}

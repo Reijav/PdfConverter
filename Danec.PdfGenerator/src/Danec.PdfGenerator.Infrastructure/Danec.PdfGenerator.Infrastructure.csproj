@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Danec.PdfGenerator.Application\Danec.PdfGenerator.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Scriban" />
+    <PackageReference Include="MiniWord" />
+    <PackageReference Include="PDFsharp" />
+    <PackageReference Include="HtmlRenderer.PdfSharp" />
+    <PackageReference Include="iTextSharp" NoWarn="NU1701" />
+    <PackageReference Include="itextsharp.xmlworker" NoWarn="NU1701" />
+    <PackageReference Include="QuestPDF" />
+    <PackageReference Include="PuppeteerSharp" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <!-- Binarios nativos de Skia/HarfBuzz para contenedores Linux (QuestPDF e iText) -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Danec.PdfGenerator.Api.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Danec.PdfGenerator.Domain\Danec.PdfGenerator.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Danec.PdfGenerator.Application\Danec.PdfGenerator.Application.csproj" />
+    <ProjectReference Include="..\..\src\Danec.PdfGenerator.Infrastructure\Danec.PdfGenerator.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+
+</Project>

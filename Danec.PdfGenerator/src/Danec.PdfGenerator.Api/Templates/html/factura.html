@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Factura {{ numero }}</title>
+<!--
+  Plantilla Scriban: {{ variable }}, {{ for x in lista }} ... {{ end }}, {{ valor | math.format "N2" }}
+  Los textos de los parametros llegan ya escapados como HTML.
+  Se usa CSS 2 + tablas para que funcione en los 4 motores HTML (iText, HtmlRenderer, Puppeteer, Playwright).
+-->
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #222222; }
+  h1 { font-size: 18pt; line-height: 22pt; color: #1f4e79; margin: 0 0 6px 0; padding-top: 4px; }
+  table { width: 100%; border-collapse: collapse; }
+  td { vertical-align: top; }
+  .muted { color: #666666; font-size: 8pt; }
+  .box { border: 1px solid #1f4e79; padding: 6px; }
+  .title { color: #1f4e79; font-weight: bold; }
+  .cliente { background-color: #f3f6fa; padding: 6px; }
+  .items th { background-color: #1f4e79; color: #ffffff; padding: 5px; text-align: left; font-size: 9pt; }
+  .items td { border-bottom: 1px solid #dddddd; padding: 4px 5px; font-size: 9pt; }
+  .num { text-align: right; }
+  .totals td { padding: 3px 5px; }
+  .total td { font-weight: bold; font-size: 12pt; color: #1f4e79; border-top: 2px solid #1f4e79; }
+  .obs { color: #555555; font-size: 8pt; margin-top: 12px; }
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  /* Marca de agua (parametro opcional "marcaAgua": BORRADOR, COPIA, ANULADA...).
+     Chromium: diagonal translucida; position:fixed la repite en cada pagina. */
+  .marca-agua {
+    position: fixed; top: 40%; left: 0; width: 100%; z-index: -1;
+    text-align: center; font-size: 90pt; font-weight: bold; letter-spacing: 8px;
+    color: #1f4e79; opacity: 0.08;
+    transform: rotate(-35deg); -webkit-transform: rotate(-35deg);
+  }
+  /* HtmlRenderer / iText (sin transform ni opacity): franja horizontal en color claro, sin tapar datos */
+  .marca-agua-simple {
+    text-align: center; font-size: 26pt; font-weight: bold; letter-spacing: 10px; color: #c5d3e0;
+    border-top: 2px solid #c5d3e0; border-bottom: 2px solid #c5d3e0; padding: 2px 0; margin-bottom: 10px;
+  }
+  /* Logo SVG como marca de agua: centrado en cada pagina, detras del contenido (solo Chromium: HtmlRenderer e iText no dibujan SVG) */
+  .logo-agua {
+    position: fixed; top: 50%; left: 50%; width: 360px; height: 360px;
+    margin-left: -180px; margin-top: -180px; opacity: 0.07; z-index: -2;
+  }
+</style>
+</head>
+<body>
+{{~ if pdf.css3 ~}}
+<svg class="logo-agua" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <polygon points="100,8 180,54 180,146 100,192 20,146 20,54" fill="none" stroke="#1f4e79" stroke-width="10" stroke-linejoin="round"/>
+  <polygon points="100,30 161,65 161,135 100,170 39,135 39,65" fill="none" stroke="#1f4e79" stroke-width="3"/>
+  <circle cx="100" cy="96" r="44" fill="#1f4e79"/>
+  <path d="M100 60 C 126 84, 126 110, 100 134 C 74 110, 74 84, 100 60 Z" fill="#ffffff"/>
+  <path d="M100 76 L100 124" stroke="#1f4e79" stroke-width="4" stroke-linecap="round"/>
+  <path d="M62 152 L138 152" stroke="#1f4e79" stroke-width="8" stroke-linecap="round"/>
+</svg>
+{{~ end ~}}
+{{~ if marcaAgua ~}}
+{{~ if pdf.css3 ~}}
+<div class="marca-agua">{{ marcaAgua }}</div>
+{{~ else ~}}
+<div class="marca-agua-simple" align="center"><font color="#9fb3c8" size="6"><b>{{ marcaAgua }}</b></font></div>
+{{~ end ~}}
+{{~ end ~}}
+{{~ subtotal = 0 ~}}
+{{~ for item in items ~}}
+{{~ subtotal = subtotal + item.cantidad * item.precio ~}}
+{{~ end ~}}
+{{~ iva_pct = ivaPorcentaje ?? 15 ~}}
+{{~ iva = math.round (subtotal * iva_pct / 100) 2 ~}}
+{{~ total = subtotal + iva ~}}
+
+<table>
+  <tr>
+    <td width="60%">
+      <h1>{{ empresa.nombre }}</h1>
+      <div>RUC: {{ empresa.ruc }}</div>
+      <div class="muted">{{ empresa.direccion }}</div>
+    </td>
+    <td width="40%" class="box">
+      <div class="title">FACTURA JAVIRPM</div>
+      <div>No. {{ numero }}</div>
+      <div>Fecha: {{ fecha }}</div>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+<table>
+  <tr>
+    <td class="cliente">
+      <div class="title">Cliente</div>
+      <div>{{ cliente.nombre }} &mdash; RUC/CI {{ cliente.ruc }}</div>
+      <div>{{ cliente.direccion }}</div>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+<table class="items" border="1" cellpadding="4" cellspacing="0">
+  <thead>
+    <tr>
+      <th width="14%">C&oacute;digo</th>
+      <th width="44%">Descripci&oacute;n</th>
+      <th width="10%" class="num">Cant.</th>
+      <th width="16%" class="num">P. unitario</th>
+      <th width="16%" class="num">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{~ for item in items ~}}
+    <tr>
+      <td>{{ item.codigo }}</td>
+      <td>{{ item.descripcion }}</td>
+      <td class="num" align="right">{{ item.cantidad }}</td>
+      <td class="num" align="right">{{ item.precio | math.format "N2" }}</td>
+      <td class="num" align="right">{{ (item.cantidad * item.precio) | math.format "N2" }}</td>
+    </tr>
+  {{~ end ~}}
+  </tbody>
+</table>
+
+<br />
+
+<table class="totals">
+  <tr><td width="60%"></td><td width="20%">Subtotal</td><td width="20%" class="num" align="right">{{ subtotal | math.format "N2" }}</td></tr>
+  <tr><td></td><td>IVA {{ iva_pct }} %</td><td class="num" align="right">{{ iva | math.format "N2" }}</td></tr>
+  <tr class="total"><td></td><td><b>TOTAL</b></td><td class="num" align="right"><b>{{ total | math.format "N2" }}</b></td></tr>
+</table>
+
+{{~ if observaciones ~}}
+<p class="obs">Observaciones: {{ observaciones }}</p>
+{{~ end ~}}
+</body>
+</html>
