@@ -21,6 +21,21 @@ public sealed class PdfGeneratorOptions
     public ChromiumOptions Chromium { get; set; } = new();
 
     public GotenbergOptions Gotenberg { get; set; } = new();
+
+    public MiniPdfOptions MiniPdf { get; set; } = new();
+}
+
+/// <summary>MiniPdf (Apache 2.0): convierte el .docx de MiniWord a PDF dentro del proceso, sin Gotenberg.</summary>
+public sealed class MiniPdfOptions
+{
+    /// <summary>Conversiones simultaneas (la conversion usa CPU y memoria del proceso de la API).</summary>
+    public int MaxConcurrency { get; set; } = 4;
+
+    /// <summary>
+    /// Familia de Word -> archivo .ttf (absoluto o relativo a Pdf:FontsPath), p.ej. "Arial": "/fonts/arial.ttf".
+    /// Fuera de Windows, las familias no configuradas se mapean a Liberation si esta instalada.
+    /// </summary>
+    public Dictionary<string, string> Fonts { get; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 /// <summary>Gotenberg (contenedor gotenberg/gotenberg:8): convierte el .docx de MiniWord a PDF con LibreOffice.</summary>

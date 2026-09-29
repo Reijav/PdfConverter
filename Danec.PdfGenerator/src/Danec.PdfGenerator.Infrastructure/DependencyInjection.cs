@@ -24,6 +24,7 @@ public static class DependencyInjection
             .Validate(o => o.Chromium.MaxConcurrency is >= 1 and <= 32, "Pdf:Chromium:MaxConcurrency debe estar entre 1 y 32.")
             .Validate(o => o.Chromium.TimeoutSeconds is >= 5 and <= 300, "Pdf:Chromium:TimeoutSeconds debe estar entre 5 y 300.")
             .Validate(o => Uri.TryCreate(o.Gotenberg.BaseUrl, UriKind.Absolute, out _), "Pdf:Gotenberg:BaseUrl debe ser una URL absoluta.")
+            .Validate(o => o.MiniPdf.MaxConcurrency is >= 1 and <= 32, "Pdf:MiniPdf:MaxConcurrency debe estar entre 1 y 32.")
             .ValidateOnStart();
 
         // Plantillas (singleton: sin estado por solicitud; Scriban cachea las plantillas parseadas)
@@ -57,6 +58,7 @@ public static class DependencyInjection
         services.AddKeyedSingleton<IPdfEngine, PuppeteerPdfEngine>(PdfEngine.Puppeteer);
         services.AddKeyedSingleton<IPdfEngine, PlaywrightPdfEngine>(PdfEngine.Playwright);
         services.AddKeyedSingleton<IPdfEngine, DocxPdfEngine>(PdfEngine.Docx);
+        services.AddKeyedSingleton<IPdfEngine, MiniPdfDocxEngine>(PdfEngine.MiniPdf);
         services.AddSingleton<IPdfEngineFactory, PdfEngineFactory>();
 
         services.AddHealthChecks().AddCheck<TemplatesHealthCheck>("templates", tags: ["ready"]);
@@ -66,6 +68,10 @@ public static class DependencyInjection
 
         // No es DI: configuracion estatica de PDFsharp que debe ocurrir antes de usar cualquier fuente
         PdfSharpFontSetup.Configure(configuration[$"{PdfGeneratorOptions.SectionName}:FontsPath"]);
+
+        // No es DI: MiniPdf registra fuentes a nivel de proceso (en Linux, Arial/Times/Courier -> Liberation)
+        var miniPdf = configuration.GetSection($"{PdfGeneratorOptions.SectionName}:MiniPdf").Get<MiniPdfOptions>() ?? new MiniPdfOptions();
+        MiniPdfFontSetup.Configure(miniPdf, configuration[$"{PdfGeneratorOptions.SectionName}:FontsPath"]);
         return services;
     }
 }

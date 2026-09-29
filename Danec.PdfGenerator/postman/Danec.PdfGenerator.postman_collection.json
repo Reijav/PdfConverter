@@ -1516,6 +1516,161 @@
           ]
         }
       ]
+    },
+    {
+      "name": "6. MiniPdf (MiniWord + MiniPdf, sin Gotenberg)",
+      "description": "Plantilla Word rellenada con MiniWord y convertida a PDF dentro del proceso con MiniPdf 0.43 (Apache 2.0). No requiere Gotenberg. Limitaciones: sin campos Página X de Y, sin bordes de párrafo, sin PDF/A.",
+      "item": [
+        {
+          "name": "Descargar Word (MiniPdf/docx)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/minipdf/docx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "minipdf",
+                "docx"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-minipdf\",\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      {\n        \"codigo\": \"A-100\",\n        \"descripcion\": \"Aceite vegetal 1 L\",\n        \"cantidad\": 24,\n        \"precio\": 2.35\n      },\n      {\n        \"codigo\": \"A-205\",\n        \"descripcion\": \"Margarina de mesa 500 g\",\n        \"cantidad\": 36,\n        \"precio\": 1.89\n      },\n      {\n        \"codigo\": \"J-310\",\n        \"descripcion\": \"Jabón de tocador 3 x 125 g\",\n        \"cantidad\": 12,\n        \"precio\": 2.75\n      },\n      {\n        \"codigo\": \"D-440\",\n        \"descripcion\": \"Detergente en polvo 2 kg\",\n        \"cantidad\": 10,\n        \"precio\": 6.4\n      },\n      {\n        \"codigo\": \"M-512\",\n        \"descripcion\": \"Manteca vegetal 1 kg\",\n        \"cantidad\": 8,\n        \"precio\": 3.15\n      }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Devuelve el .docx rellenado por MiniWord. Usa **Send and Download**."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type docx\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"wordprocessingml.document\"));",
+                  "pm.test(\"Es un .docx (zip PK)\", () => pm.expect(pm.response.text().substring(0, 2)).to.eql(\"PK\"));",
+                  "pm.test(\"Nombre factura-minipdf.docx\", () => pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\"factura-minipdf.docx\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PDF con MiniPdf (en proceso)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/minipdf/pdf?inline=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "minipdf",
+                "pdf"
+              ],
+              "query": [
+                {
+                  "key": "inline",
+                  "value": "true"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-minipdf\",\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      {\n        \"codigo\": \"A-100\",\n        \"descripcion\": \"Aceite vegetal 1 L\",\n        \"cantidad\": 24,\n        \"precio\": 2.35\n      },\n      {\n        \"codigo\": \"A-205\",\n        \"descripcion\": \"Margarina de mesa 500 g\",\n        \"cantidad\": 36,\n        \"precio\": 1.89\n      },\n      {\n        \"codigo\": \"J-310\",\n        \"descripcion\": \"Jabón de tocador 3 x 125 g\",\n        \"cantidad\": 12,\n        \"precio\": 2.75\n      },\n      {\n        \"codigo\": \"D-440\",\n        \"descripcion\": \"Detergente en polvo 2 kg\",\n        \"cantidad\": 10,\n        \"precio\": 6.4\n      },\n      {\n        \"codigo\": \"M-512\",\n        \"descripcion\": \"Manteca vegetal 1 kg\",\n        \"cantidad\": 8,\n        \"precio\": 3.15\n      }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "MiniWord rellena la plantilla y MiniPdf la convierte a PDF sin Gotenberg. `?inline=true` la abre en el navegador."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type application/pdf\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"));",
+                  "pm.test(\"X-Pdf-Engine = MiniPdf\", () => pm.expect(pm.response.headers.get(\"X-Pdf-Engine\")).to.eql(\"MiniPdf\"));",
+                  "pm.test(\"Empieza con %PDF-\", () => pm.expect(pm.response.text().substring(0, 5)).to.eql(\"%PDF-\"));",
+                  "pm.test(\"Tiempo de render informado\", () => pm.expect(Number(pm.response.headers.get(\"X-Render-Time-Ms\"))).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - plantilla inexistente (MiniPdf)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/minipdf/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "minipdf",
+                "pdf"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"no-existe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "La plantilla Word no existe: ProblemDetails 404."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"errorCode = Documents.TemplateNotFound\", () => pm.expect(pm.response.json().errorCode).to.eql(\"Documents.TemplateNotFound\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "event": [

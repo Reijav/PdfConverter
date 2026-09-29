@@ -71,6 +71,22 @@ Content-Type: application/json
   "fileName": "kpis"
 }
 
+### ------------------------------------------------------------------
+### Plantilla Word con MiniWord + MiniPdf (en proceso, sin Gotenberg)
+### ------------------------------------------------------------------
+
+### Word (.docx) rellenado por MiniWord
+POST http://localhost:5080/api/v1/minipdf/docx
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
+### PDF convertido con MiniPdf
+POST http://localhost:5080/api/v1/minipdf/pdf?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura.request.json
+
 ### Vista previa del HTML combinado (depurar plantillas)
 POST {{api}}/preview-html
 Content-Type: application/json

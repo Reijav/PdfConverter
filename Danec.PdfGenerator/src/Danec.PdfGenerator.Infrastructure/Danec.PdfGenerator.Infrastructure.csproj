@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Scriban" />
     <PackageReference Include="MiniWord" />
+    <PackageReference Include="MiniPdf" />
     <PackageReference Include="PDFsharp" />
     <PackageReference Include="HtmlRenderer.PdfSharp" />
     <PackageReference Include="iTextSharp" NoWarn="NU1701" />

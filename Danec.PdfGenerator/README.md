@@ -11,6 +11,7 @@ Web API .NET 10 (Clean Architecture) que genera PDF a partir de **plantillas + p
 | `puppeteer` | PuppeteerSharp 25 + Chromium | MIT | `Templates/html/*.html` | HTML5 / CSS3 completo, flexbox, grid |
 | `playwright` | Microsoft.Playwright 1.63 + Chromium | Apache 2.0 | `Templates/html/*.html` | HTML5 / CSS3 completo, flexbox, grid |
 | `docx` | MiniWord 0.9.2 + Gotenberg 8 (LibreOffice) | Apache 2.0 / MIT | `Templates/docx/*.docx` | El negocio edita la plantilla en Word; PDF fiel al .docx |
+| `/api/v1/minipdf/pdf` | MiniWord 0.9.2 + MiniPdf 0.43 (en proceso) | Apache 2.0 | `Templates/docx/*.docx` | Plantilla Word sin Gotenberg; documentos simples sin "Página X de Y" ni PDF/A |
 
 Medición local en Windows (factura de ejemplo, con el motor en caliente):
 
@@ -92,6 +93,20 @@ Mismo cuerpo que el resto: `{ "template": "factura", "data": { ... }, "fileName"
 
 Gotenberg es un contenedor aparte y escucha en el puerto **3001** (`--api-port=3001`). En local: `docker run -d --name gotenberg -p 3001:3001 gotenberg/gotenberg:8 gotenberg --api-port=3001`, o `docker compose up`, que levanta la API y Gotenberg. En Container Apps va como sidecar con el mismo argumento, en `http://localhost:3001`. Se configura con `Pdf:Gotenberg:BaseUrl` y `TimeoutSeconds`. Si Gotenberg no responde, `/pdf/docx` devuelve 500 `Documents.ConverterUnavailable` y el resto de motores sigue funcionando.
 
+## Plantillas Word sin Gotenberg (MiniWord + MiniPdf)
+
+| Endpoint | Devuelve |
+|---|---|
+| `POST /api/v1/minipdf/docx` | El `.docx` rellenado por MiniWord (mismo resultado que `/api/v1/word`) |
+| `POST /api/v1/minipdf/pdf` | El PDF: MiniWord rellena el `.docx` y MiniPdf lo convierte dentro del proceso. Admite `?inline=true` |
+
+Cuerpo: `{ "template": "factura", "data": { ... }, "fileName": "..." }`. Usa las mismas plantillas y reglas de marcadores que la sección anterior. El tamaño de página y los márgenes los define el `.docx`.
+
+- No necesita Gotenberg ni licencia comercial (MiniPdf, Apache 2.0). En Linux la factura tarda ~60–80 ms en caliente.
+- Limitaciones de MiniPdf 0.x: no resuelve campos de Word (el pie "Página X de Y" sale vacío), no dibuja bordes de párrafo y no genera PDF/A. El espaciado vertical es algo más holgado que en Word. Detalle en el anexo ADR-GDOC-001-A.
+- Fuentes: fuera de Windows, al iniciar se registran Arial, Helvetica, Calibri, Times New Roman, Georgia, Courier New y Consolas con su equivalente Liberation (`MiniPdfFontSetup`). Sin eso MiniPdf usa Helvetica sin incrustar y el PDF puede pesar varios MB. Para fuentes corporativas use `Pdf:MiniPdf:Fonts`.
+- La conversión usa CPU del proceso de la API; `Pdf:MiniPdf:MaxConcurrency` limita las conversiones simultáneas.
+
 ## Inyección de dependencias
 
 Todo se registra de forma explícita, sin escaneo por reflexión:
@@ -108,7 +123,7 @@ Para agregar un motor: crea la clase `IPdfEngine`, agrega el valor al enum `PdfE
 
 ## Postman
 
-La carpeta `postman/` contiene la colección (26 peticiones y 88 aserciones) y dos entornos: **Local** (puerto 5080) y **Docker** (puerto 8081).
+La carpeta `postman/` contiene la colección (32 peticiones y 110 aserciones) y dos entornos: **Local** (puerto 5080) y **Docker** (puerto 8081).
 
 - En Postman: *Import* de los tres archivos, elige el entorno y usa *Run collection*. Para guardar un PDF usa **Send and Download**.
 - Por línea de comandos, con la API corriendo:
@@ -140,6 +155,8 @@ Container Apps: asigna al menos 1 CPU y 2 GiB si usas Chromium, y ajusta `Pdf__C
 | `Chromium:TimeoutSeconds` | 30 | |
 | `Chromium:AllowExternalResources` | `false` | `false` bloquea toda petición de red de la plantilla (anti-SSRF): usa imágenes en `data:` URI |
 | `Chromium:Args` | `--no-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu` | |
+| `MiniPdf:MaxConcurrency` | 4 | Conversiones MiniPdf simultáneas (1 a 32) |
+| `MiniPdf:Fonts` | `{}` | Familia de Word → archivo `.ttf` (absoluto o relativo a `FontsPath`), p. ej. `"Arial": "/fonts/arial.ttf"` |
 
 ## Decisiones y trampas resueltas
 
