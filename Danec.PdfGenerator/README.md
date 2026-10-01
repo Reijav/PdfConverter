@@ -7,6 +7,7 @@ Web API .NET 10 (Clean Architecture) que genera PDF a partir de **plantillas + p
 | `itext` | iTextSharp 5.5.13.1 + XMLWorker | **AGPL** | `Templates/html/*.html` | XHTML + CSS 2.1; exige publicar el código o licencia comercial de iText |
 | `questpdf` | QuestPDF **2022.12.15** (última MIT) | MIT | Clase C# `IQuestPdfTemplate` | Diseño en código, tipado; sin soporte oficial |
 | `htmlrenderer` | Scriban + HtmlRenderer.PdfSharp 1.6.1 / PDFsharp 6.2 | BSD / MIT | `Templates/html/*.html` | HTML 4 / CSS 2, 100 % .NET, muy rápido |
+| `htmlrenderer-fondo` | Igual que `htmlrenderer` + imagen de fondo estampada con PDFsharp | BSD / MIT | `Templates/html/*.html` + `Templates/fondo/*.png\|jpg` | Cartas y documentos con membrete o fondo corporativo |
 | `overlay` | PDF base + texto superpuesto (PDFsharp) | MIT | `Templates/overlay/*.pdf` + `.json` | Certificados y formularios de diseño fijo |
 | `puppeteer` | PuppeteerSharp 25 + Chromium | MIT | `Templates/html/*.html` | HTML5 / CSS3 completo, flexbox, grid |
 | `playwright` | Microsoft.Playwright 1.63 + Chromium | Apache 2.0 | `Templates/html/*.html` | HTML5 / CSS3 completo, flexbox, grid |
@@ -106,6 +107,31 @@ Cuerpo: `{ "template": "factura", "data": { ... }, "fileName": "..." }`. Usa las
 - Limitaciones de MiniPdf 0.x: no resuelve campos de Word (el pie "Página X de Y" sale vacío), no dibuja bordes de párrafo y no genera PDF/A. El espaciado vertical es algo más holgado que en Word. Detalle en el anexo ADR-GDOC-001-A.
 - Fuentes: fuera de Windows, al iniciar se registran Arial, Helvetica, Calibri, Times New Roman, Georgia, Courier New y Consolas con su equivalente Liberation (`MiniPdfFontSetup`). Sin eso MiniPdf usa Helvetica sin incrustar y el PDF puede pesar varios MB. Para fuentes corporativas use `Pdf:MiniPdf:Fonts`.
 - La conversión usa CPU del proceso de la API; `Pdf:MiniPdf:MaxConcurrency` limita las conversiones simultáneas.
+
+## Imagen de fondo (`POST /api/v1/pdf/htmlrenderer-fondo`)
+
+Genera el PDF igual que `/pdf/htmlrenderer` y **después** estampa una imagen de `Templates/fondo` detrás del contenido. PDFsharp usa `XGraphicsPdfPageOptions.Prepend`: la imagen se inserta al inicio del flujo de cada página, por lo que el texto, los bordes y los rellenos de tabla quedan visibles encima. La imagen se incrusta una sola vez y todas las páginas la referencian.
+
+```json
+{
+  "template": "factura",
+  "data": { ... },
+  "fondo": { "imagen": "fondo-de-cartas", "paginas": "Todas", "ajuste": "Ancho" }
+}
+```
+
+| Campo | Valores | Por defecto |
+|---|---|---|
+| `fondo.imagen` | Nombre del archivo en `Templates/fondo` **sin extensión** (`.png`, `.jpg` o `.jpeg`). Solo letras, números, `-` y `_` | `Pdf:Fondo:Default` (`fondo-de-cartas`) |
+| `fondo.paginas` | `Todas`, `Primera` | `Todas` |
+| `fondo.ajuste` | `Ancho` (todo el ancho, alto proporcional, arriba), `Pagina` (estirada a la hoja), `Centrado` (tamaño natural, se reduce si no cabe) | `Ancho` |
+
+- `fondo` es opcional; sin él se aplica la imagen por defecto en todas las páginas.
+- La plantilla debe tener fondo transparente: un `background` en `body` o en un contenedor de página completa tapa la imagen.
+- Para que el texto no quede sobre el membrete, ajuste `page.marginMm` o deje espacio en la plantilla.
+- Respuesta: además de `X-Pdf-Engine` y `X-Render-Time-Ms`, devuelve `X-Background` (archivo usado) y `X-Background-Ms` (tiempo del estampado).
+- Errores: `Documents.BackgroundNameInvalid` (400), `Documents.BackgroundInvalid` (400: no es PNG/JPEG o supera `Pdf:Fondo:MaxBytes`), `Documents.BackgroundNotFound` (404).
+- Las imágenes se cachean en memoria; para cambiar una hay que redesplegar o reiniciar.
 
 ## Inyección de dependencias
 

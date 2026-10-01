@@ -25,6 +25,8 @@ internal sealed class TemplatePaths
 
     public string DocxDirectory => Path.Combine(Root, "docx");
 
+    public string BackgroundDirectory => Path.Combine(Root, "fondo");
+
     public string HtmlFile(TemplateName name) => Path.Combine(HtmlDirectory, $"{name.Value}.html");
 
     public string OverlayPdf(TemplateName name) => Path.Combine(OverlayDirectory, $"{name.Value}.pdf");

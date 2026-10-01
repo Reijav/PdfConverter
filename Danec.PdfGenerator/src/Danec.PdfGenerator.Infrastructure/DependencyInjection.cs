@@ -1,3 +1,5 @@
+using Danec.PdfGenerator.Application.Documents.GeneratePdfWithBackground;
+using Danec.PdfGenerator.Infrastructure.Backgrounds;
 using Danec.PdfGenerator.Infrastructure.Engines;
 using Danec.PdfGenerator.Infrastructure.Engines.Chromium;
 using Danec.PdfGenerator.Infrastructure.Engines.Docx;
@@ -25,6 +27,8 @@ public static class DependencyInjection
             .Validate(o => o.Chromium.TimeoutSeconds is >= 5 and <= 300, "Pdf:Chromium:TimeoutSeconds debe estar entre 5 y 300.")
             .Validate(o => Uri.TryCreate(o.Gotenberg.BaseUrl, UriKind.Absolute, out _), "Pdf:Gotenberg:BaseUrl debe ser una URL absoluta.")
             .Validate(o => o.MiniPdf.MaxConcurrency is >= 1 and <= 32, "Pdf:MiniPdf:MaxConcurrency debe estar entre 1 y 32.")
+            .Validate(o => TemplateName.Create(o.Fondo.Default).IsSuccess, "Pdf:Fondo:Default debe ser un nombre sin extension (letras, numeros, '-' o '_').")
+            .Validate(o => o.Fondo.MaxBytes is >= 1024 and <= 50 * 1024 * 1024, "Pdf:Fondo:MaxBytes debe estar entre 1 KB y 50 MB.")
             .ValidateOnStart();
 
         // Plantillas (singleton: sin estado por solicitud; Scriban cachea las plantillas parseadas)
@@ -32,6 +36,10 @@ public static class DependencyInjection
         services.AddSingleton<IHtmlTemplateRenderer, ScribanHtmlTemplateRenderer>();
         services.AddSingleton<ITemplateCatalog, FileSystemTemplateCatalog>();
         services.AddSingleton<IQuestPdfTemplate, FacturaQuestTemplate>();
+
+        // Imagenes de fondo (Templates/fondo) y estampado detras del contenido con PDFsharp
+        services.AddSingleton<IBackgroundImageStore, FileSystemBackgroundImageStore>();
+        services.AddSingleton<IPdfBackgroundStamper, PdfSharpBackgroundStamper>();
 
         // Word: MiniWord rellena la plantilla; los "enrichers" agregan valores calculados por plantilla
         services.AddSingleton<IWordTemplateEnricher, FacturaWordEnricher>();

@@ -23,6 +23,18 @@ public sealed class PdfGeneratorOptions
     public GotenbergOptions Gotenberg { get; set; } = new();
 
     public MiniPdfOptions MiniPdf { get; set; } = new();
+
+    public BackgroundOptions Fondo { get; set; } = new();
+}
+
+/// <summary>Imagenes de fondo que se estampan detras del PDF (Templates/fondo/{nombre}.png|.jpg|.jpeg).</summary>
+public sealed class BackgroundOptions
+{
+    /// <summary>Imagen usada cuando la solicitud no envia 'fondo.imagen' (nombre sin extension).</summary>
+    public string Default { get; set; } = "fondo-de-cartas";
+
+    /// <summary>Tamano maximo de la imagen. Cada PDF incrusta la imagen completa.</summary>
+    public int MaxBytes { get; set; } = 5 * 1024 * 1024;
 }
 
 /// <summary>MiniPdf (Apache 2.0): convierte el .docx de MiniWord a PDF dentro del proceso, sin Gotenberg.</summary>

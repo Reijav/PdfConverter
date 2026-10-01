@@ -53,4 +53,17 @@ public static class DocumentErrors
 
     public static Error RenderFailed(PdfEngine engine, string detail) => Error.Failure(
         "Documents.RenderFailed", $"El motor {engine} no pudo generar el PDF: {detail}");
+
+    public static Error BackgroundNameInvalid(string value) => Error.Validation(
+        "Documents.BackgroundNameInvalid",
+        $"El nombre de fondo '{value}' no es valido: use letras, numeros, '-' o '_' (maximo {TemplateName.MaxLength}), sin extension.");
+
+    public static Error BackgroundInvalid(string detail) => Error.Validation(
+        "Documents.BackgroundInvalid", $"Fondo no valido: {detail}");
+
+    public static Error BackgroundNotFound(string name) => Error.NotFound(
+        "Documents.BackgroundNotFound", $"No existe la imagen de fondo '{name}' (.png, .jpg o .jpeg en Templates/fondo).");
+
+    public static Error BackgroundFailed(string detail) => Error.Failure(
+        "Documents.BackgroundFailed", $"No se pudo aplicar la imagen de fondo: {detail}");
 }

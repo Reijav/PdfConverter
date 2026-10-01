@@ -1671,6 +1671,541 @@
           ]
         }
       ]
+    },
+    {
+      "name": "7. Imagen de fondo (HtmlRenderer + PDFsharp)",
+      "description": "Genera el PDF con HtmlRenderer y después estampa una imagen de Templates/fondo DETRÁS del contenido (XGraphicsPdfPageOptions.Prepend), por lo que texto, bordes y rellenos quedan visibles.\n\n- fondo.imagen: nombre sin extensión (.png, .jpg o .jpeg). Variable de colección {{fondoImagen}} (por defecto fondo-de-cartas; use fondo para el de prueba).\n- fondo.paginas: Todas (defecto) | Primera\n- fondo.ajuste: Ancho (defecto) | Pagina | Centrado\n- Sin el objeto fondo se usa Pdf:Fondo:Default en todas las páginas.\n- Cabeceras de respuesta: X-Pdf-Engine, X-Render-Time-Ms, X-Background, X-Background-Ms.",
+      "item": [
+        {
+          "name": "Factura con fondo (todas las páginas, ancho)",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type application/pdf\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"));",
+                  "pm.test(\"X-Pdf-Engine = HtmlRenderer\", () => pm.expect(pm.response.headers.get(\"X-Pdf-Engine\")).to.eql(\"HtmlRenderer\"));",
+                  "pm.test(\"Empieza con %PDF-\", () => pm.expect(pm.response.text().substring(0, 5)).to.eql(\"%PDF-\"));",
+                  "pm.test(\"X-Background informado\", () => pm.expect(pm.response.headers.get(\"X-Background\")).to.match(/\\.(png|jpe?g)$/));",
+                  "pm.test(\"Tiempos informados\", () => {",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Render-Time-Ms\"))).to.be.above(0);",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Background-Ms\"))).to.be.at.least(0);",
+                  "});",
+                  "pm.test(\"Content-Disposition inline\", () => pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\"inline\"));"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo?inline=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": [
+                {
+                  "key": "inline",
+                  "value": "true"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-001-001-000012345-fondo\",\n  \"page\": { \"size\": \"A4\", \"orientation\": \"Portrait\", \"marginMm\": 15 },\n  \"fondo\": { \"imagen\": \"{{fondoImagen}}\", \"paginas\": \"Todas\", \"ajuste\": \"Ancho\" },\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      { \"codigo\": \"A-100\", \"descripcion\": \"Aceite vegetal 1 L\", \"cantidad\": 24, \"precio\": 2.35 },\n      { \"codigo\": \"A-205\", \"descripcion\": \"Margarina de mesa 500 g\", \"cantidad\": 36, \"precio\": 1.89 },\n      { \"codigo\": \"J-310\", \"descripcion\": \"Jabón de tocador 3 x 125 g\", \"cantidad\": 12, \"precio\": 2.75 },\n      { \"codigo\": \"D-440\", \"descripcion\": \"Detergente en polvo 2 kg\", \"cantidad\": 10, \"precio\": 6.40 },\n      { \"codigo\": \"M-512\", \"descripcion\": \"Manteca vegetal 1 kg\", \"cantidad\": 8, \"precio\": 3.15 }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Imagen al ancho de la hoja, alto proporcional, anclada arriba."
+          }
+        },
+        {
+          "name": "Factura con fondo estirado a la hoja",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type application/pdf\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"));",
+                  "pm.test(\"X-Pdf-Engine = HtmlRenderer\", () => pm.expect(pm.response.headers.get(\"X-Pdf-Engine\")).to.eql(\"HtmlRenderer\"));",
+                  "pm.test(\"Empieza con %PDF-\", () => pm.expect(pm.response.text().substring(0, 5)).to.eql(\"%PDF-\"));",
+                  "pm.test(\"X-Background informado\", () => pm.expect(pm.response.headers.get(\"X-Background\")).to.match(/\\.(png|jpe?g)$/));",
+                  "pm.test(\"Tiempos informados\", () => {",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Render-Time-Ms\"))).to.be.above(0);",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Background-Ms\"))).to.be.at.least(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo?inline=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": [
+                {
+                  "key": "inline",
+                  "value": "true"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-001-001-000012345-fondo\",\n  \"page\": { \"size\": \"A4\", \"orientation\": \"Portrait\", \"marginMm\": 15 },\n  \"fondo\": { \"imagen\": \"{{fondoImagen}}\", \"paginas\": \"Todas\", \"ajuste\": \"Pagina\" },\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      { \"codigo\": \"A-100\", \"descripcion\": \"Aceite vegetal 1 L\", \"cantidad\": 24, \"precio\": 2.35 },\n      { \"codigo\": \"A-205\", \"descripcion\": \"Margarina de mesa 500 g\", \"cantidad\": 36, \"precio\": 1.89 },\n      { \"codigo\": \"J-310\", \"descripcion\": \"Jabón de tocador 3 x 125 g\", \"cantidad\": 12, \"precio\": 2.75 },\n      { \"codigo\": \"D-440\", \"descripcion\": \"Detergente en polvo 2 kg\", \"cantidad\": 10, \"precio\": 6.40 },\n      { \"codigo\": \"M-512\", \"descripcion\": \"Manteca vegetal 1 kg\", \"cantidad\": 8, \"precio\": 3.15 }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "ajuste=Pagina: la imagen cubre toda la hoja (puede deformarse)."
+          }
+        },
+        {
+          "name": "Factura con fondo centrado",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type application/pdf\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"));",
+                  "pm.test(\"X-Pdf-Engine = HtmlRenderer\", () => pm.expect(pm.response.headers.get(\"X-Pdf-Engine\")).to.eql(\"HtmlRenderer\"));",
+                  "pm.test(\"Empieza con %PDF-\", () => pm.expect(pm.response.text().substring(0, 5)).to.eql(\"%PDF-\"));",
+                  "pm.test(\"X-Background informado\", () => pm.expect(pm.response.headers.get(\"X-Background\")).to.match(/\\.(png|jpe?g)$/));",
+                  "pm.test(\"Tiempos informados\", () => {",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Render-Time-Ms\"))).to.be.above(0);",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Background-Ms\"))).to.be.at.least(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo?inline=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": [
+                {
+                  "key": "inline",
+                  "value": "true"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-001-001-000012345-fondo\",\n  \"page\": { \"size\": \"A4\", \"orientation\": \"Portrait\", \"marginMm\": 15 },\n  \"fondo\": { \"imagen\": \"{{fondoImagen}}\", \"paginas\": \"Todas\", \"ajuste\": \"Centrado\" },\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      { \"codigo\": \"A-100\", \"descripcion\": \"Aceite vegetal 1 L\", \"cantidad\": 24, \"precio\": 2.35 },\n      { \"codigo\": \"A-205\", \"descripcion\": \"Margarina de mesa 500 g\", \"cantidad\": 36, \"precio\": 1.89 },\n      { \"codigo\": \"J-310\", \"descripcion\": \"Jabón de tocador 3 x 125 g\", \"cantidad\": 12, \"precio\": 2.75 },\n      { \"codigo\": \"D-440\", \"descripcion\": \"Detergente en polvo 2 kg\", \"cantidad\": 10, \"precio\": 6.40 },\n      { \"codigo\": \"M-512\", \"descripcion\": \"Manteca vegetal 1 kg\", \"cantidad\": 8, \"precio\": 3.15 }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "ajuste=Centrado: tamaño natural centrado; se reduce si no cabe."
+          }
+        },
+        {
+          "name": "Varias páginas, fondo solo en la primera",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type application/pdf\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"));",
+                  "pm.test(\"X-Pdf-Engine = HtmlRenderer\", () => pm.expect(pm.response.headers.get(\"X-Pdf-Engine\")).to.eql(\"HtmlRenderer\"));",
+                  "pm.test(\"Empieza con %PDF-\", () => pm.expect(pm.response.text().substring(0, 5)).to.eql(\"%PDF-\"));",
+                  "pm.test(\"X-Background informado\", () => pm.expect(pm.response.headers.get(\"X-Background\")).to.match(/\\.(png|jpe?g)$/));",
+                  "pm.test(\"Tiempos informados\", () => {",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Render-Time-Ms\"))).to.be.above(0);",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Background-Ms\"))).to.be.at.least(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo?inline=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": [
+                {
+                  "key": "inline",
+                  "value": "true"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"html\": \"<html><body><h2>Carta de varias paginas</h2>{{ for i in 1..120 }}<p>Parrafo {{ i }}: el fondo se estampa detras del texto.</p>{{ end }}</body></html>\",\n  \"fileName\": \"carta-varias-paginas\",\n  \"page\": { \"size\": \"A4\", \"marginMm\": 25 },\n  \"fondo\": { \"imagen\": \"{{fondoImagen}}\", \"paginas\": \"Primera\", \"ajuste\": \"Pagina\" }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "HTML en línea que ocupa varias páginas; paginas=Primera (membrete de carta)."
+          }
+        },
+        {
+          "name": "Sin objeto fondo (usa Pdf:Fondo:Default)",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Content-Type application/pdf\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\"));",
+                  "pm.test(\"X-Pdf-Engine = HtmlRenderer\", () => pm.expect(pm.response.headers.get(\"X-Pdf-Engine\")).to.eql(\"HtmlRenderer\"));",
+                  "pm.test(\"Empieza con %PDF-\", () => pm.expect(pm.response.text().substring(0, 5)).to.eql(\"%PDF-\"));",
+                  "pm.test(\"X-Background informado\", () => pm.expect(pm.response.headers.get(\"X-Background\")).to.match(/\\.(png|jpe?g)$/));",
+                  "pm.test(\"Tiempos informados\", () => {",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Render-Time-Ms\"))).to.be.above(0);",
+                  "    pm.expect(Number(pm.response.headers.get(\"X-Background-Ms\"))).to.be.at.least(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-001-001-000012345-fondo\",\n  \"page\": { \"size\": \"A4\", \"orientation\": \"Portrait\", \"marginMm\": 15 },\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      { \"codigo\": \"A-100\", \"descripcion\": \"Aceite vegetal 1 L\", \"cantidad\": 24, \"precio\": 2.35 },\n      { \"codigo\": \"A-205\", \"descripcion\": \"Margarina de mesa 500 g\", \"cantidad\": 36, \"precio\": 1.89 },\n      { \"codigo\": \"J-310\", \"descripcion\": \"Jabón de tocador 3 x 125 g\", \"cantidad\": 12, \"precio\": 2.75 },\n      { \"codigo\": \"D-440\", \"descripcion\": \"Detergente en polvo 2 kg\", \"cantidad\": 10, \"precio\": 6.40 },\n      { \"codigo\": \"M-512\", \"descripcion\": \"Manteca vegetal 1 kg\", \"cantidad\": 8, \"precio\": 3.15 }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Descarga el PDF con la imagen por defecto en todas las páginas."
+          }
+        },
+        {
+          "name": "404 - imagen de fondo inexistente",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"ProblemDetails (RFC 9457)\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"));",
+                  "pm.test(\"errorCode = Documents.BackgroundNotFound\", () => pm.expect(pm.response.json().errorCode).to.eql(\"Documents.BackgroundNotFound\"));"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"factura\",\n  \"fileName\": \"factura-001-001-000012345-fondo\",\n  \"page\": { \"size\": \"A4\", \"orientation\": \"Portrait\", \"marginMm\": 15 },\n  \"fondo\": { \"imagen\": \"no-existe\", \"paginas\": \"Todas\", \"ajuste\": \"Ancho\" },\n  \"data\": {\n    \"numero\": \"001-001-000012345\",\n    \"fecha\": \"27/09/2026\",\n    \"ivaPorcentaje\": 15,\n    \"empresa\": {\n      \"nombre\": \"Empresa Demo S.A.\",\n      \"ruc\": \"0999999999001\",\n      \"direccion\": \"Av. Principal 123, Quito - Ecuador\"\n    },\n    \"cliente\": {\n      \"nombre\": \"Juan Pérez & Asociados\",\n      \"ruc\": \"1799999999001\",\n      \"direccion\": \"Calle Secundaria N45-10, Quito\"\n    },\n    \"items\": [\n      { \"codigo\": \"A-100\", \"descripcion\": \"Aceite vegetal 1 L\", \"cantidad\": 24, \"precio\": 2.35 },\n      { \"codigo\": \"A-205\", \"descripcion\": \"Margarina de mesa 500 g\", \"cantidad\": 36, \"precio\": 1.89 },\n      { \"codigo\": \"J-310\", \"descripcion\": \"Jabón de tocador 3 x 125 g\", \"cantidad\": 12, \"precio\": 2.75 },\n      { \"codigo\": \"D-440\", \"descripcion\": \"Detergente en polvo 2 kg\", \"cantidad\": 10, \"precio\": 6.40 },\n      { \"codigo\": \"M-512\", \"descripcion\": \"Manteca vegetal 1 kg\", \"cantidad\": 8, \"precio\": 3.15 }\n    ],\n    \"observaciones\": \"Pago a 30 días. Precios incluyen descuento por volumen.\"\n  }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El fondo se valida antes de generar el PDF."
+          }
+        },
+        {
+          "name": "400 - nombre de fondo inválido (path traversal)",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"ProblemDetails (RFC 9457)\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"));",
+                  "pm.test(\"errorCode = Documents.BackgroundNameInvalid\", () => pm.expect(pm.response.json().errorCode).to.eql(\"Documents.BackgroundNameInvalid\"));"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"template\": \"factura\", \"fondo\": { \"imagen\": \"../appsettings\" } }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Solo letras, números, - y _ ; sin extensión."
+          }
+        },
+        {
+          "name": "400 - nombre con espacios o extensión",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"ProblemDetails (RFC 9457)\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"));",
+                  "pm.test(\"errorCode = Documents.BackgroundNameInvalid\", () => pm.expect(pm.response.json().errorCode).to.eql(\"Documents.BackgroundNameInvalid\"));"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"template\": \"factura\", \"fondo\": { \"imagen\": \"fondo de cartas.png\" } }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Renombre el archivo a fondo-de-cartas.png y envíe fondo-de-cartas."
+          }
+        },
+        {
+          "name": "400 - ajuste no válido",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"template\": \"factura\", \"fondo\": { \"ajuste\": \"Mosaico\" } }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Valores: Ancho, Pagina, Centrado."
+          }
+        },
+        {
+          "name": "404 - plantilla HTML inexistente",
+          "event": [
+            {
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"ProblemDetails (RFC 9457)\", () => pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\"));",
+                  "pm.test(\"errorCode = Documents.TemplateNotFound\", () => pm.expect(pm.response.json().errorCode).to.eql(\"Documents.TemplateNotFound\"));"
+                ],
+                "type": "text/javascript"
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pdf/htmlrenderer-fondo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pdf",
+                "htmlrenderer-fondo"
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"template\": \"no-existe\", \"fondo\": { \"imagen\": \"{{fondoImagen}}\" } }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El fondo existe pero la plantilla no."
+          }
+        }
+      ]
     }
   ],
   "event": [
@@ -1686,5 +2221,12 @@
       }
     }
   ],
-  "variable": []
+  "variable": [
+    {
+      "key": "fondoImagen",
+      "value": "fondo-de-cartas",
+      "type": "string",
+      "description": "Imagen de Templates/fondo sin extension. Use \"fondo\" para el fondo de prueba."
+    }
+  ]
 }

@@ -27,5 +27,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("Testing");
         builder.UseSetting("RateLimiting:PermitLimit", "10000");
         builder.UseSetting("Serilog:MinimumLevel:Default", "Warning");
+
+        // Los tests usan Templates/fondo/fondo.jpg (versionada) y no dependen del fondo corporativo
+        builder.UseSetting("Pdf:Fondo:Default", "fondo");
     }
 }

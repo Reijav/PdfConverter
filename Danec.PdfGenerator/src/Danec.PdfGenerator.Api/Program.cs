@@ -42,6 +42,7 @@ try
     api.MapPdfEndpoints();
     api.MapWordEndpoints();
     api.MapMiniPdfEndpoints();
+    api.MapPdfFondoEndpoints();
 
     app.MapHealthChecks("/health/live", new() { Predicate = _ => false }).AllowAnonymous();
     app.MapHealthChecks("/health/ready", new() { Predicate = c => c.Tags.Contains("ready") }).AllowAnonymous();

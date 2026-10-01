@@ -29,6 +29,13 @@ Content-Type: application/json
 
 < ./Templates/requests/factura.request.json
 
+### 3b. HtmlRenderer + imagen de fondo (Templates/fondo/fondo-de-cartas.png) estampada detras del contenido
+### fondo.paginas: Todas | Primera   fondo.ajuste: Ancho | Pagina | Centrado   (fondo es opcional)
+POST {{api}}/htmlrenderer-fondo?inline=true
+Content-Type: application/json
+
+< ./Templates/requests/factura-fondo.request.json
+
 ### 4. PuppeteerSharp (Chromium)
 POST {{api}}/puppeteer?inline=true
 Content-Type: application/json

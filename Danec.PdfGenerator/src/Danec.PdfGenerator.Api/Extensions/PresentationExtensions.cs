@@ -24,7 +24,7 @@ public static class PresentationExtensions
         services.AddCors(options => options.AddPolicy(
             CorsPolicy,
             policy => policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod()
-                .WithExposedHeaders("Content-Disposition", "X-Pdf-Engine", "X-Render-Time-Ms")));
+                .WithExposedHeaders("Content-Disposition", "X-Pdf-Engine", "X-Render-Time-Ms", "X-Background", "X-Background-Ms")));
 
         var permitLimit = configuration.GetValue("RateLimiting:PermitLimit", 100);
         services.AddRateLimiter(options =>

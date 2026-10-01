@@ -1,4 +1,5 @@
 using Danec.PdfGenerator.Application.Documents.GeneratePdf;
+using Danec.PdfGenerator.Application.Documents.GeneratePdfWithBackground;
 using Danec.PdfGenerator.Application.Documents.GenerateWord;
 using Danec.PdfGenerator.Application.Documents.PreviewHtml;
 using Danec.PdfGenerator.Application.Documents.Templates;
@@ -15,6 +16,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<GeneratePdfHandler>();
+        services.AddScoped<GeneratePdfWithBackgroundHandler>();
         services.AddScoped<GenerateWordHandler>();
         services.AddScoped<PreviewHtmlHandler>();
         services.AddScoped<ListTemplatesHandler>();
