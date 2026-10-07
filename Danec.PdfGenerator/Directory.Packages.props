@@ -35,13 +35,21 @@
     <!-- Chromium headless -->
     <PackageVersion Include="PuppeteerSharp" Version="25.12.0" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.63.0" />
+    <!-- SelectPdf.Universal (LICENCIA COMERCIAL, sin clave sale con marca de agua): HTML -> PDF y Word -> PDF.
+         Los paquetes Native traen Chromium y solo los usa HTML -> PDF; el .csproj referencia el del sistema donde se compila.
+         VERIFICAR la version en nuget.org antes del primer restore: los cuatro paquetes deben usar la misma -->
+    <PackageVersion Include="SelectPdf.Universal" Version="26.4.0" />
+    <PackageVersion Include="SelectPdf.Universal.Native.win-x64" Version="26.4.0" />
+    <PackageVersion Include="SelectPdf.Universal.Native.linux-x64" Version="26.4.0" />
   </ItemGroup>
 
   <ItemGroup Label="Nativos y pinning transitivo">
-    <PackageVersion Include="SkiaSharp" Version="2.88.9" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9" />
-    <PackageVersion Include="HarfBuzzSharp" Version="7.3.0.3" />
-    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.3" />
+    <!-- SelectPdf.Universal 26.4.0 exige SkiaSharp >= 3.119.4 y HarfBuzzSharp >= 8.3.1.5 (antes 2.88.9 / 7.3.0.3).
+         QuestPDF 2022.12 se compilo contra SkiaSharp 2.88: si se cambian estas versiones, ejecutar la prueba del motor questpdf -->
+    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.4" />
+    <PackageVersion Include="HarfBuzzSharp" Version="8.3.1.5" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.5" />
     <PackageVersion Include="BouncyCastle.Cryptography" Version="2.7.0" />
   </ItemGroup>
 

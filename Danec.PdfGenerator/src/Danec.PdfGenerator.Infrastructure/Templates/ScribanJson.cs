@@ -34,7 +34,7 @@ internal static class ScribanJson
 
         var pdf = new ScriptObject();
         pdf.SetValue("motor", engine?.ToString() ?? "Preview", readOnly: true);
-        pdf.SetValue("css3", engine is PdfEngine.Puppeteer or PdfEngine.Playwright, readOnly: true);
+        pdf.SetValue("css3", engine is PdfEngine.Puppeteer or PdfEngine.Playwright or PdfEngine.SelectPdf, readOnly: true);
         globals.SetValue(ReservedVariable, pdf, readOnly: true);
 
         return globals;

@@ -46,6 +46,7 @@
 </style>
 </head>
 <body>
+
 {{~ if pdf.css3 ~}}
 <svg class="logo-agua" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <polygon points="100,8 180,54 180,146 100,192 20,146 20,54" fill="none" stroke="#1f4e79" stroke-width="10" stroke-linejoin="round"/>
@@ -71,6 +72,7 @@
 {{~ iva = math.round (subtotal * iva_pct / 100) 2 ~}}
 {{~ total = subtotal + iva ~}}
 
+<div style="height: 100px">&nbsp;</div>
 <table>
   <tr>
     <td width="60%">

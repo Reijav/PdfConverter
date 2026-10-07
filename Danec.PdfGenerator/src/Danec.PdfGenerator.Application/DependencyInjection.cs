@@ -17,6 +17,7 @@ public static class DependencyInjection
     {
         services.AddScoped<GeneratePdfHandler>();
         services.AddScoped<GeneratePdfWithBackgroundHandler>();
+        services.AddScoped<GenerateWordPdfWithBackgroundHandler>();
         services.AddScoped<GenerateWordHandler>();
         services.AddScoped<PreviewHtmlHandler>();
         services.AddScoped<ListTemplatesHandler>();

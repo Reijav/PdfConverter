@@ -7,6 +7,7 @@ using Danec.PdfGenerator.Infrastructure.Engines.HtmlRenderer;
 using Danec.PdfGenerator.Infrastructure.Engines.IText;
 using Danec.PdfGenerator.Infrastructure.Engines.Overlay;
 using Danec.PdfGenerator.Infrastructure.Engines.QuestPdf;
+using Danec.PdfGenerator.Infrastructure.Engines.SelectPdfUniversal;
 using Danec.PdfGenerator.Infrastructure.Fonts;
 using Danec.PdfGenerator.Infrastructure.Templates;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +28,8 @@ public static class DependencyInjection
             .Validate(o => o.Chromium.TimeoutSeconds is >= 5 and <= 300, "Pdf:Chromium:TimeoutSeconds debe estar entre 5 y 300.")
             .Validate(o => Uri.TryCreate(o.Gotenberg.BaseUrl, UriKind.Absolute, out _), "Pdf:Gotenberg:BaseUrl debe ser una URL absoluta.")
             .Validate(o => o.MiniPdf.MaxConcurrency is >= 1 and <= 32, "Pdf:MiniPdf:MaxConcurrency debe estar entre 1 y 32.")
+            .Validate(o => o.SelectPdf.MaxConcurrency is >= 1 and <= 8, "Pdf:SelectPdf:MaxConcurrency debe estar entre 1 y 8.")
+            .Validate(o => o.SelectPdf.TimeoutSeconds is >= 5 and <= 300, "Pdf:SelectPdf:TimeoutSeconds debe estar entre 5 y 300.")
             .Validate(o => TemplateName.Create(o.Fondo.Default).IsSuccess, "Pdf:Fondo:Default debe ser un nombre sin extension (letras, numeros, '-' o '_').")
             .Validate(o => o.Fondo.MaxBytes is >= 1024 and <= 50 * 1024 * 1024, "Pdf:Fondo:MaxBytes debe estar entre 1 KB y 50 MB.")
             .ValidateOnStart();
@@ -67,6 +70,8 @@ public static class DependencyInjection
         services.AddKeyedSingleton<IPdfEngine, PlaywrightPdfEngine>(PdfEngine.Playwright);
         services.AddKeyedSingleton<IPdfEngine, DocxPdfEngine>(PdfEngine.Docx);
         services.AddKeyedSingleton<IPdfEngine, MiniPdfDocxEngine>(PdfEngine.MiniPdf);
+        services.AddKeyedSingleton<IPdfEngine, SelectPdfHtmlEngine>(PdfEngine.SelectPdf);
+        services.AddKeyedSingleton<IPdfEngine, SelectPdfDocxEngine>(PdfEngine.SelectPdfWord);
         services.AddSingleton<IPdfEngineFactory, PdfEngineFactory>();
 
         services.AddHealthChecks().AddCheck<TemplatesHealthCheck>("templates", tags: ["ready"]);
@@ -80,6 +85,10 @@ public static class DependencyInjection
         // No es DI: MiniPdf registra fuentes a nivel de proceso (en Linux, Arial/Times/Courier -> Liberation)
         var miniPdf = configuration.GetSection($"{PdfGeneratorOptions.SectionName}:MiniPdf").Get<MiniPdfOptions>() ?? new MiniPdfOptions();
         MiniPdfFontSetup.Configure(miniPdf, configuration[$"{PdfGeneratorOptions.SectionName}:FontsPath"]);
+
+        // No es DI: SelectPdf guarda la licencia y sus restricciones en propiedades estaticas del proceso
+        var selectPdf = configuration.GetSection($"{PdfGeneratorOptions.SectionName}:SelectPdf").Get<SelectPdfOptions>() ?? new SelectPdfOptions();
+        SelectPdfSetup.Configure(selectPdf);
         return services;
     }
 }

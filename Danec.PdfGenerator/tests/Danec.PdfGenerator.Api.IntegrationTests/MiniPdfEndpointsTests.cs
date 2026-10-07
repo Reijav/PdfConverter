@@ -89,6 +89,35 @@ public class MiniPdfEndpointsTests(ApiFactory factory)
         factura["engines"]!.AsArray().Select(e => e!.ToString()).ShouldContain("MiniPdf");
     }
 
+    [Fact]
+    public async Task Word_pdf_fondo_convierte_el_docx_a_pdf_antes_de_estampar_el_fondo()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/minipdf/word-pdf-fondo",
+            new { template = "factura", data = await SampleAsync("factura"), fileName = "factura-fondo", fondo = new { imagen = "fondo" } },
+            Ct);
+
+        var bytes = await response.Content.ReadAsByteArrayAsync(Ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, System.Text.Encoding.UTF8.GetString(bytes));
+        response.Content.Headers.ContentType!.MediaType.ShouldBe("application/pdf");
+        response.Content.Headers.ContentDisposition!.FileNameStar.ShouldBe("factura-fondo.pdf");
+        response.Headers.GetValues("X-Pdf-Engine").Single().ShouldBe("MiniPdf");
+        response.Headers.GetValues("X-Background").Single().ShouldBe("fondo.jpg");
+        System.Text.Encoding.ASCII.GetString(bytes, 0, 5).ShouldBe("%PDF-");
+    }
+
+    [Fact]
+    public async Task Word_pdf_fondo_con_fondo_inexistente_devuelve_404()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/minipdf/word-pdf-fondo",
+            new { template = "factura", fondo = new { imagen = "no-existe" } },
+            Ct);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await response.Content.ReadAsStringAsync(Ct)).ShouldContain("Documents.BackgroundNotFound");
+    }
+
     private async Task<JsonNode> SampleAsync(string template) =>
         JsonNode.Parse(await _client.GetStringAsync($"/api/v1/pdf/templates/{template}/sample", Ct))!;
 }

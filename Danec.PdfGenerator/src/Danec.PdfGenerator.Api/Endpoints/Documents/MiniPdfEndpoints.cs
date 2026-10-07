@@ -51,6 +51,15 @@ public static class MiniPdfEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        group.MapPost("/word-pdf-fondo", GeneratePdfFondoAsync)
+            .WithName("MiniPdfFondoGeneratePdf")
+            .WithSummary("MiniWord + MiniPdf + Agregar Fondo: plantilla Word + parametros -> PDF (sin Gotenberg)")
+            .WithDescription("Rellena la plantilla Word con MiniWord y la convierte a PDF con MiniPdf (Apache 2.0), se agrega fondo en proceso . Tamano y margenes los define el .docx. Limitaciones: sin campos de numero de pagina, sin bordes de parrafo, sin PDF/A. Use ?inline=true para verlo en el navegador.")
+            .Produces(StatusCodes.Status200OK, contentType: PdfContentType)
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         return app;
     }
 
@@ -98,6 +107,42 @@ public static class MiniPdfEndpoints
         var pdf = result.Value;
         http.Response.Headers["X-Pdf-Engine"] = pdf.Engine.ToString();
         http.Response.Headers["X-Render-Time-Ms"] = pdf.ElapsedMs.ToString(CultureInfo.InvariantCulture);
+
+        if (inline ?? false)
+        {
+            http.Response.Headers.ContentDisposition = $"inline; filename=\"{pdf.FileName}\"";
+            return TypedResults.File(pdf.Content, PdfContentType);
+        }
+
+        return TypedResults.File(pdf.Content, PdfContentType, pdf.FileName);
+    }
+
+      private static async Task<Results<FileContentHttpResult, ProblemHttpResult>> GeneratePdfFondoAsync(
+        GeneratePdfFondoRequest request,
+        bool? inline,
+        GenerateWordPdfWithBackgroundHandler handler,
+        HttpContext http,
+        CancellationToken cancellationToken)
+    {
+        var command = new GenerateWordPdfWithBackgroundCommand(
+            request.Template,
+            request.Data ?? default,
+            request.FileName,
+            Image: request.Fondo?.Imagen,
+            request.Fondo?.Paginas,
+            request.Fondo?.Ajuste);
+
+        var result = await handler.HandleAsync(command, cancellationToken);
+        if (result.IsFailure)
+        {
+            return result.ToProblem();
+        }
+
+        var pdf = result.Value;
+        http.Response.Headers["X-Pdf-Engine"] = PdfEngine.MiniPdf.ToString();
+        http.Response.Headers["X-Render-Time-Ms"] = pdf.ElapsedMs.ToString(CultureInfo.InvariantCulture);
+        http.Response.Headers["X-Background"] = pdf.Background;
+        http.Response.Headers["X-Background-Ms"] = pdf.BackgroundMs.ToString(CultureInfo.InvariantCulture);
 
         if (inline ?? false)
         {

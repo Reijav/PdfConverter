@@ -25,6 +25,27 @@ public sealed class PdfGeneratorOptions
     public MiniPdfOptions MiniPdf { get; set; } = new();
 
     public BackgroundOptions Fondo { get; set; } = new();
+
+    public SelectPdfOptions SelectPdf { get; set; } = new();
+}
+
+/// <summary>SelectPdf.Universal (licencia comercial): HTML -> PDF con su Chromium y Word -> PDF en proceso.</summary>
+public sealed class SelectPdfOptions
+{
+    /// <summary>
+    /// Clave de licencia. Vacia: modo de prueba (marca de agua en cada pagina). No la escriba en appsettings:
+    /// use Key Vault, la variable de entorno Pdf__SelectPdf__LicenseKey o user-secrets.
+    /// </summary>
+    public string? LicenseKey { get; set; }
+
+    /// <summary>Conversiones simultaneas (HTML y Word tienen cada uno su propio limite).</summary>
+    public int MaxConcurrency { get; set; } = 4;
+
+    /// <summary>Tiempo maximo de carga del HTML en Chromium.</summary>
+    public int TimeoutSeconds { get; set; } = 60;
+
+    /// <summary>false (recomendado): la plantilla no puede leer archivos del servidor (file://).</summary>
+    public bool AllowLocalFiles { get; set; }
 }
 
 /// <summary>Imagenes de fondo que se estampan detras del PDF (Templates/fondo/{nombre}.png|.jpg|.jpeg).</summary>

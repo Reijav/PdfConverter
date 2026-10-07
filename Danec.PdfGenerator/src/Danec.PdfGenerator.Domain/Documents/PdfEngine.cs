@@ -26,6 +26,12 @@ public enum PdfEngine
 
     /// <summary>Plantilla Word (.docx) rellenada con MiniWord y convertida a PDF en proceso con MiniPdf (Apache 2.0).</summary>
     MiniPdf,
+
+    /// <summary>SelectPdf.Universal (licencia comercial) con su Chromium incluido: HTML5 / CSS3.</summary>
+    SelectPdf,
+
+    /// <summary>Plantilla Word (.docx) rellenada con MiniWord y convertida a PDF en proceso con SelectPdf.Universal (licencia comercial).</summary>
+    SelectPdfWord,
 }
 
 /// <summary>Tipo de plantilla que consume cada motor.</summary>
@@ -47,15 +53,15 @@ public enum TemplateKind
 public static class PdfEngineExtensions
 {
     private static readonly PdfEngine[] HtmlEngines =
-        [PdfEngine.IText, PdfEngine.HtmlRenderer, PdfEngine.Puppeteer, PdfEngine.Playwright];
+        [PdfEngine.IText, PdfEngine.HtmlRenderer, PdfEngine.Puppeteer, PdfEngine.Playwright, PdfEngine.SelectPdf];
 
-    private static readonly PdfEngine[] WordEngines = [PdfEngine.Docx, PdfEngine.MiniPdf];
+    private static readonly PdfEngine[] WordEngines = [PdfEngine.Docx, PdfEngine.MiniPdf, PdfEngine.SelectPdfWord];
 
     public static TemplateKind GetTemplateKind(this PdfEngine engine) => engine switch
     {
         PdfEngine.QuestPdf => TemplateKind.Code,
         PdfEngine.Overlay => TemplateKind.Overlay,
-        PdfEngine.Docx or PdfEngine.MiniPdf => TemplateKind.Word,
+        PdfEngine.Docx or PdfEngine.MiniPdf or PdfEngine.SelectPdfWord => TemplateKind.Word,
         _ => TemplateKind.Html,
     };
 

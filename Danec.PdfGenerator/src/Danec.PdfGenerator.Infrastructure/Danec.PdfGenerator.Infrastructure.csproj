@@ -19,6 +19,10 @@
     <PackageReference Include="QuestPDF" />
     <PackageReference Include="PuppeteerSharp" />
     <PackageReference Include="Microsoft.Playwright" />
+    <!-- SelectPdf: el paquete Native (Chromium) depende del sistema donde se compila: Windows en desarrollo, Linux en la imagen -->
+    <PackageReference Include="SelectPdf.Universal" />
+    <PackageReference Include="SelectPdf.Universal.Native.win-x64" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="SelectPdf.Universal.Native.linux-x64" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
     <!-- Binarios nativos de Skia/HarfBuzz para contenedores Linux (QuestPDF e iText) -->
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
